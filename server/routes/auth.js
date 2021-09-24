@@ -6,7 +6,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = 'brendadorsen';
-//create user using post
+//create user using post: createuser
 router.post(
   '/createuser',
   [
@@ -29,14 +29,14 @@ router.post(
       const secPass = await bcrypt.hash(req.body.password, salt);
 
       //create new user
-      User.create({
+      user = User.create({
         username: req.body.name,
         password: secPass,
         email: req.body.email,
       });
       const data = {
         user: {
-          id: User.id,
+          id: user.id,
         },
       };
       const authtoken = jwt.sign(data, JWT_SECRET);
@@ -49,9 +49,9 @@ router.post(
   }
 );
 
-//authenticate user using POST
+//authenticate user using POST for login user
 router.post(
-  '/createuser',
+  '/login',
   [
     body('email', 'Enter a valid email').isEmail(),
     body('password', 'Password cannot be blank').exists(),
@@ -63,13 +63,13 @@ router.post(
     }
     const { email, password } = req.body;
     try {
-      let user = User.findOne({ email });
+      let user = await User.findOne({ email });
       if (!user) {
-        res
+        return res
           .status(400)
           .json({ error: 'please login with correct credentials' });
       }
-      const passwordCompare = bcrypt.compare(password, user.password);
+      const passwordCompare = await bcrypt.compare(password, user.password);
       if (!passwordCompare) {
         return res
           .status(400)
@@ -78,11 +78,11 @@ router.post(
 
       const data = {
         user: {
-          id: User.id,
+          id: user.id,
         },
       };
       const authtoken = jwt.sign(data, JWT_SECRET);
-      res.json(authtoken);
+      res.json({ authtoken });
     } catch (error) {
       console.log(error.message);
       res.status(500).send('Internal server error');
