@@ -4,7 +4,7 @@ const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-
+const fetchuser = require('../middleware/fetchuser');
 const JWT_SECRET = 'brendadorsen';
 //create user using post: createuser
 router.post(
@@ -89,4 +89,16 @@ router.post(
     }
   }
 );
+
+//get login user details usin post:"/api/auth/getuser"
+router.post('/getuser', fetchuser, async (req, res) => {
+  try {
+    userId = req.user.id;
+    const user = await User.findById(userId).select('password');
+    res.send(user);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).send('Internal server error');
+  }
+});
 module.exports = router;
