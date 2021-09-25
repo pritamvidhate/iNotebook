@@ -10,6 +10,10 @@ const UserSchema = new Schema({
     require: true,
     unique: true,
   },
+  password: {
+    type: String,
+    required: true,
+  },
   date: {
     type: Date,
     default: Date.now,
