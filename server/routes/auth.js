@@ -44,7 +44,7 @@ router.post(
       res.json({ authtoken });
     } catch (error) {
       console.log(error.message);
-      res.status(500).send('some error ocurred');
+      res.status(500).send('Internal server error');
     }
   }
 );
@@ -58,7 +58,7 @@ router.post(
   ],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty) {
+    if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
     const { email, password } = req.body;
@@ -70,6 +70,7 @@ router.post(
           .json({ error: 'please login with correct credentials' });
       }
       const passwordCompare = await bcrypt.compare(password, user.password);
+      console.log(passwordCompare);
       if (!passwordCompare) {
         return res
           .status(400)
