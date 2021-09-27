@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Note = require('../models/Note');
+const Notes = require('../models/Note');
 const fetchuser = require('../middleware/fetchuser');
 const { body, validationResult } = require('express-validator');
 
@@ -33,13 +33,13 @@ router.post(
       if (!errors.isEmpty) {
         return res.status(400).json({ errors: errors.array() });
       }
-      const note = new Note({
+      const notes = new Notes({
         title,
         description,
         tag,
         user: req.user.id,
       });
-      const saveNote = await note.save();
+      const saveNote = await notes.save();
       res.json(saveNote);
     } catch (error) {
       console.log(error.message);
@@ -48,4 +48,32 @@ router.post(
   }
 );
 
+// Update existing notes by using post or put
+router.put('/updatenote/:id', fetchuser, async (req, res) => {
+  const { title, description, tah } = req.body;
+  //create newNote object
+  const newNote = {};
+  if (title) {
+    newNote.title = title;
+  }
+  if (description) {
+    newNote.description = description;
+  }
+  if (tag) {
+    newNote.tag = tag;
+  }
+  const note = await Notes.findById(req.params.id);
+  if (!note) {
+    return res.status(401).send('not found');
+  }
+
+  if (note.user.toString() !== req.user.id) {
+    return res.status(401).send('not Allowed');
+  }
+
+  (note = await Notes.findByIdAndUpdate(req.param.id)),
+    { $set: newNote },
+    { new: true };
+  res.send({ note });
+});
 module.exports = router;
